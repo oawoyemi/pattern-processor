@@ -1,15 +1,35 @@
 package com.example
 
-object PatternProcessor {
-  val sequenceRegex = """%\{[0-9]S?[0-9]?}""".r
+object CaptureSequence {
+  def o(s: String) = if (s.isEmpty) None else Some(s)
 
-  def process(pattern: String)(text: String): String = {
-    val tokens = sequenceRegex.findAllIn(pattern).toList
-//    val parsetoRegex = tokens.map(_=> "(.+)")
-    val regex = sequenceRegex.replaceAllIn(pattern, "(.+)").r
-    regex.findFirstIn(text) match {
-      case Some(`text`) => text
-      case _ => ""
+  def apply(i: String, m: String, q: String): CaptureSequence =
+    new CaptureSequence(i.toInt, o(m).map(_.toSeq.head), o(q).map(_.toInt))
+}
+
+case class CaptureSequence(index: Int, modifier: Option[Char], quantifier: Option[Int])
+
+object PatternProcessor {
+  val sequenceTokens = """%\{(\d+)([SG]?)(\d*)\}""".r
+
+  def asRegex(token: CaptureSequence) = token match {
+    case CaptureSequence(_, Some('S'), Some(0))          => """(\S*)"""
+    case CaptureSequence(_, Some('S'), Some(quantifier)) => """(\w+( ){1}\w*)""" + s"{$quantifier}"
+    case CaptureSequence(_, Some('G'), _)                => """(.+)"""
+    case _                                               => """(.+?)"""
+  }
+
+  def parseCaptureSequences(pattern: String) =
+    for (s <- sequenceTokens findAllIn pattern) yield {
+      val sequenceTokens(i, m, q) = s
+      s -> CaptureSequence(i, m, q)
     }
+
+  def process(pattern: String)(text: String): Option[String] = {
+    val patternAsRegex = parseCaptureSequences(pattern).foldLeft(pattern) { (a, b) =>
+      a.replace(b._1, asRegex(b._2))
+    } + "$"
+
+    patternAsRegex.r.findFirstIn(text)
   }
 }

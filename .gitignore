@@ -4,3 +4,7 @@
 /project/project/
 /project/target/
 /target/
+*actiavator
+*.sc
+*.jar
+*.idea
