@@ -13,20 +13,20 @@ class PatternProcessorSpec extends WordSpec with Matchers {
         val text = "foo blah is a bar"
         process(text) shouldBe Some(text)
       }
-      """match "foo blah is a very big boat"""" in {
+      "match \"foo blah is a very big boat\"" in {
         val text = "foo blah is a very big boat"
         process(text) shouldBe Some(text)
       }
-      """not match "foo blah is bar"""" in {
+      "not match \"foo blah is bar\"" in {
         val text = "foo blah is bar"
         process(text) shouldBe None
       }
-      """"not match "foo blah"""" in {
+      "not match \"foo blah\"" in {
         val text = "foo blah"
         process(text) shouldBe None
       }
 
-      """"not match "foo blah is"""" in {
+      "not match \"foo blah is\"" in {
         val text = "foo blah"
         process(text) shouldBe None
       }
@@ -105,4 +105,3 @@ class PatternProcessorSpec extends WordSpec with Matchers {
     }
   }
 }
-
